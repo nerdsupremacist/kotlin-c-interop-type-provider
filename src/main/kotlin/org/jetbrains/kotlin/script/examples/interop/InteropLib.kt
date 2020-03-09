@@ -20,11 +20,16 @@ suspend fun InteropLib.Definition.sourceCode(): SourceCode {
     val copied = File(parentFolder, file.name).also { it.deleteOnExit() }
     file.copyTo(copied)
 
+    val libraryFile = File(parentFolder, "lib.klib").also { it.deleteOnExit() }
+
     shell(dir = parentFolder) {
-        "cinterop -def ${copied.name}"()
+        "cinterop -def ${copied.absolutePath} -o ${parentFolder.absolutePath}/lib"()
     }
 
-    return copied.toScriptSource()
+
+    val kotlinFile = File(parentFolder, "lib-build/kotlin/${file.nameWithoutExtension}/${file.nameWithoutExtension}.kt")
+
+    return kotlinFile.toScriptSource()
 }
 
 fun InteropLib.definition(): InteropLib.Definition = when (this) {
