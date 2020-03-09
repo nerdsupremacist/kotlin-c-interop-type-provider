@@ -1,8 +1,9 @@
 package org.jetbrains.kotlin.script.examples
 
+import org.jetbrains.kotlin.script.examples.interop.definition
+import org.jetbrains.kotlin.script.examples.interop.sourceCode
 import kotlin.script.experimental.api.*
 import kotlin.script.experimental.host.FileBasedScriptSource
-import kotlin.script.experimental.host.toScriptSource
 
 object Configurator : RefineScriptCompilationConfigurationHandler {
 
@@ -20,20 +21,18 @@ object Configurator : RefineScriptCompilationConfigurationHandler {
             }
             ?.takeIf { it.isNotEmpty() } ?: return context.compilationConfiguration.asSuccess()
 
-        // TODO: use `annotations` to generate your code
-        val generatedCode = emptyList<String>()
+        val generatedScripts = annotations
+            .mapSuccess { it.lib(baseDirectory) }
+            .valueOr { return it }
+            .map { it.definition() }
+            .map { it.sourceCode() }
 
-        val generatedScripts = generatedCode
-            .map { resolvedCode ->
-                createTempFile(prefix = "CodeGen", suffix = ".$extension.kts", directory = baseDirectory)
-                    .apply { writeText(resolvedCode) }
-                    .apply { deleteOnExit() }
-                    .toScriptSource()
+        return context
+            .compilationConfiguration
+            .with {
+                importScripts.append(generatedScripts)
             }
-
-        return ScriptCompilationConfiguration(context.compilationConfiguration) {
-            importScripts.append(generatedScripts)
-        }.asSuccess()
+            .asSuccess()
     }
 
 }
