@@ -1,8 +1,6 @@
 package org.jetbrains.kotlin.script.examples.interop
 
 import java.io.File
-import kotlin.script.experimental.api.SourceCode
-import kotlin.script.experimental.host.toScriptSource
 import eu.jrie.jetbrains.kotlinshell.shell.shell
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
@@ -12,7 +10,7 @@ sealed class InteropLib {
 }
 
 @ExperimentalCoroutinesApi
-suspend fun InteropLib.Definition.sourceCode(): SourceCode {
+suspend fun InteropLib.Definition.library(): Library {
     val parentFolder = createTempDir("CInterOp", suffix = "")
         .also { it.mkdirs() }
         .also { it.deleteOnExit() }
@@ -20,16 +18,15 @@ suspend fun InteropLib.Definition.sourceCode(): SourceCode {
     val copied = File(parentFolder, file.name).also { it.deleteOnExit() }
     file.copyTo(copied)
 
-    val libraryFile = File(parentFolder, "lib.klib").also { it.deleteOnExit() }
-
+    val command =  "cinterop -def ${copied.absolutePath} -o ${parentFolder.absolutePath}/lib"
     shell(dir = parentFolder) {
-        "cinterop -def ${copied.absolutePath} -o ${parentFolder.absolutePath}/lib"()
+       command()
     }
 
-
-    val kotlinFile = File(parentFolder, "lib-build/kotlin/${file.nameWithoutExtension}/${file.nameWithoutExtension}.kt")
-
-    return kotlinFile.toScriptSource()
+    return Library(
+        klib = File(parentFolder, "lib.klib"),
+        stubs = File(parentFolder, "lib-build/kotlin/${file.nameWithoutExtension}/${file.nameWithoutExtension}.kt")
+    )
 }
 
 fun InteropLib.definition(): InteropLib.Definition = when (this) {

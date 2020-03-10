@@ -3,9 +3,10 @@ package org.jetbrains.kotlin.script.examples
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.kotlin.script.examples.interop.definition
-import org.jetbrains.kotlin.script.examples.interop.sourceCode
+import org.jetbrains.kotlin.script.examples.interop.library
 import kotlin.script.experimental.api.*
 import kotlin.script.experimental.host.FileBasedScriptSource
+import kotlin.script.experimental.host.toScriptSource
 
 object Configurator : RefineScriptCompilationConfigurationHandler {
 
@@ -24,20 +25,24 @@ object Configurator : RefineScriptCompilationConfigurationHandler {
             }
             ?.takeIf { it.isNotEmpty() } ?: return context.compilationConfiguration.asSuccess()
 
-        val generatedScripts = annotations
+        val libraries = annotations
             .mapSuccess { it.lib(baseDirectory) }
             .valueOr { return@invoke it }
             .map { it.definition() }
             .let { definitions ->
                 runBlocking {
-                    definitions.map { it.sourceCode() }
+                    definitions.map { it.library() }
                 }
             }
+
+        val options = libraries.map { "-Xklib=${it.klib.absolutePath}" }
+        val scripts = libraries.map { it.stubs.toScriptSource() }
 
         return context
             .compilationConfiguration
             .with {
-                importScripts.append(generatedScripts)
+                compilerOptions.append(options)
+                importScripts.append(scripts)
             }
             .asSuccess()
     }
