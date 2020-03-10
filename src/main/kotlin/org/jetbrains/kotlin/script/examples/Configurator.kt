@@ -7,6 +7,7 @@ import org.jetbrains.kotlin.script.examples.interop.library
 import kotlin.script.experimental.api.*
 import kotlin.script.experimental.host.FileBasedScriptSource
 import kotlin.script.experimental.host.toScriptSource
+import kotlin.script.experimental.jvm.updateClasspath
 
 object Configurator : RefineScriptCompilationConfigurationHandler {
 
@@ -35,14 +36,16 @@ object Configurator : RefineScriptCompilationConfigurationHandler {
                 }
             }
 
-        val options = libraries.map { "-Xklib=${it.klib.absolutePath}" }
+        val imports = libraries.map { "${it.name}.*" }
         val scripts = libraries.map { it.stubs.toScriptSource() }
+        val jars = libraries.flatMap { it.jars }.distinct()
 
         return context
             .compilationConfiguration
             .with {
-                compilerOptions.append(options)
+                defaultImports.append(imports)
                 importScripts.append(scripts)
+                updateClasspath(jars)
             }
             .asSuccess()
     }
