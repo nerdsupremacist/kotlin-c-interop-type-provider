@@ -33,6 +33,7 @@ suspend fun InteropLib.Definition.library(): Library {
     return Library(
         packageName = packageName,
         stubs = File(parentFolder, "${packageName.folder}/${file.nameWithoutExtension}.kt"),
+        libraryPath = parentFolder,
         jars = listOf(nativeJar)
     )
 }
