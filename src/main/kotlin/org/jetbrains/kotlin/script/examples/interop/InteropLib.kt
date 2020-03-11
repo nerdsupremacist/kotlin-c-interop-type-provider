@@ -3,6 +3,7 @@ package org.jetbrains.kotlin.script.examples.interop
 import java.io.File
 import eu.jrie.jetbrains.kotlinshell.shell.shell
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import java.util.*
 import kotlin.script.experimental.api.ResultWithDiagnostics
 import kotlin.script.experimental.api.asErrorDiagnostics
 import kotlin.script.experimental.api.asSuccess
@@ -15,9 +16,10 @@ sealed class InteropLib {
 
 @ExperimentalCoroutinesApi
 suspend fun InteropLib.Definition.library(): Library {
+    val packageName = packageName()
     val parentFolder = createTempDir("CInterOp", suffix = "")
-        .also { it.mkdirs() }
-        .also { it.deleteOnExit() }
+        .apply { mkdirs() }
+        .apply { deleteOnExit() }
 
     val nativeFolder = File("native")
     val processCLib = File(nativeFolder, "bin/processCLib")
@@ -29,10 +31,17 @@ suspend fun InteropLib.Definition.library(): Library {
     }
 
     return Library(
-        name = file.nameWithoutExtension,
-        stubs = File(parentFolder, "${file.nameWithoutExtension}/${file.nameWithoutExtension}.kt"),
+        packageName = packageName,
+        stubs = File(parentFolder, "${packageName.folder}/${file.nameWithoutExtension}.kt"),
         jars = listOf(nativeJar)
     )
+}
+
+fun InteropLib.Definition.packageName(): PackageName {
+    val properties = Properties().apply { load(file.inputStream()) }
+
+    val packageName = properties.getProperty("package") ?: return PackageName(listOf(file.nameWithoutExtension))
+    return PackageName(packageName.split("."))
 }
 
 fun InteropLib.definition(): ResultWithDiagnostics<InteropLib.Definition> = when (this) {

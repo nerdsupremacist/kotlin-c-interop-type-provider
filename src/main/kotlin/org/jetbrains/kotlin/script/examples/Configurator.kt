@@ -42,7 +42,7 @@ object Configurator : RefineScriptCompilationConfigurationHandler {
             }.awaitAll()
         }
 
-        val imports = libraries.map { "${it.name}.*" }
+        val imports = libraries.map { "${it.packageName.name}.*" }
         val scripts = libraries.map { it.stubs.toScriptSource() }
         val jars = libraries.flatMap { it.jars }.distinct()
 
