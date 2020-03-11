@@ -1,6 +1,8 @@
 package org.jetbrains.kotlin.script.examples
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.kotlin.script.examples.interop.definition
 import org.jetbrains.kotlin.script.examples.interop.library
@@ -26,15 +28,19 @@ object Configurator : RefineScriptCompilationConfigurationHandler {
             }
             ?.takeIf { it.isNotEmpty() } ?: return context.compilationConfiguration.asSuccess()
 
-        val libraries = annotations
+        val definitions = annotations
             .mapSuccess { it.lib(baseDirectory) }
-            .valueOr { return@invoke it }
-            .map { it.definition() }
-            .let { definitions ->
-                runBlocking {
-                    definitions.map { it.library() }
+            .valueOr { return it }
+            .mapSuccess { it.definition() }
+            .valueOr { return it }
+
+        val libraries = runBlocking {
+            definitions.map { definition ->
+                async {
+                    definition.library()
                 }
-            }
+            }.awaitAll()
+        }
 
         val imports = libraries.map { "${it.name}.*" }
         val scripts = libraries.map { it.stubs.toScriptSource() }

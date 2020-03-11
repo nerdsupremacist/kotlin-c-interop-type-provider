@@ -3,6 +3,10 @@ package org.jetbrains.kotlin.script.examples.interop
 import java.io.File
 import eu.jrie.jetbrains.kotlinshell.shell.shell
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlin.script.experimental.api.ResultWithDiagnostics
+import kotlin.script.experimental.api.asErrorDiagnostics
+import kotlin.script.experimental.api.asSuccess
+import kotlin.script.experimental.api.makeFailureResult
 
 sealed class InteropLib {
     class Definition(val file: File) : InteropLib()
@@ -26,13 +30,19 @@ suspend fun InteropLib.Definition.library(): Library {
 
     return Library(
         name = file.nameWithoutExtension,
-        klib = File(parentFolder, "lib.klib"),
         stubs = File(parentFolder, "${file.nameWithoutExtension}/${file.nameWithoutExtension}.kt"),
         jars = listOf(nativeJar)
     )
 }
 
-fun InteropLib.definition(): InteropLib.Definition = when (this) {
-    is InteropLib.Definition -> this
-    is InteropLib.HeaderFile -> TODO()
+fun InteropLib.definition(): ResultWithDiagnostics<InteropLib.Definition> = when (this) {
+    is InteropLib.Definition -> this.asSuccess()
+    is InteropLib.HeaderFile ->
+        /*
+            TODO: We need to
+                1. Locate the implementation
+                2. Compile the implementation
+                3. Create a def file for it
+         */
+        makeFailureResult("Including a header file directly is not implemented yet. Please use a .def file".asErrorDiagnostics())
 }
