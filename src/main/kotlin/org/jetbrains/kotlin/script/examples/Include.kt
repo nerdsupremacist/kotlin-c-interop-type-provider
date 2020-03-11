@@ -13,7 +13,10 @@ import kotlin.script.experimental.api.makeFailureResult
 annotation class Include(val path: String)
 
 fun Include.lib(baseDirectory: File?): ResultWithDiagnostics<InteropLib> {
-    val file = baseDirectory?.resolve(path)?.takeIf { it.exists() } ?: File(path)
+    val file = baseDirectory?.resolve(path)?.takeIf { it.exists() }
+        ?: File(path).takeIf { it.exists() }
+        ?: return makeFailureResult("File for $path cannot be found")
+
     return when (file.extension) {
         "def" -> InteropLib.Definition(file).asSuccess()
         "h" -> InteropLib.HeaderFile(file).asSuccess()

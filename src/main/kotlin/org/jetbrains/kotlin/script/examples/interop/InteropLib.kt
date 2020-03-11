@@ -44,5 +44,5 @@ fun InteropLib.definition(): ResultWithDiagnostics<InteropLib.Definition> = when
                 2. Compile the implementation
                 3. Create a def file for it
          */
-        makeFailureResult("Including a header file directly is not implemented yet. Please use a .def file".asErrorDiagnostics())
+        makeFailureResult("Including a header file directly is not implemented yet. Please use a .def file")
 }
