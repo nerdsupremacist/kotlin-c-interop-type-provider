@@ -15,16 +15,20 @@ suspend fun InteropLib.Definition.library(): Library {
         .also { it.mkdirs() }
         .also { it.deleteOnExit() }
 
-    val command =  "/usr/local/kotlin-native/bin/cinterop -def ${file.absolutePath} -o ${parentFolder.absolutePath}/lib -no-default-libs -Xpurge-user-libs -mode sourcecode -no-endorsed-libs"
-    shell {
+    val nativeFolder = File("native")
+    val processCLib = File(nativeFolder, "bin/processCLib")
+    val nativeJar = File(nativeFolder, "konan/lib/kotlin-native.jar")
+
+    val command = "${processCLib.absolutePath} -def ${file.absolutePath} -no-default-libs -Xpurge-user-libs -mode sourcecode -no-endorsed-libs"
+    shell(dir = parentFolder) {
        command()
     }
 
     return Library(
         name = file.nameWithoutExtension,
         klib = File(parentFolder, "lib.klib"),
-        stubs = File(parentFolder, "lib-build/kotlin/${file.nameWithoutExtension}/${file.nameWithoutExtension}.kt"),
-        jars = listOf(File("/usr/local/kotlin-native/konan/lib/kotlin-native.jar"))
+        stubs = File(parentFolder, "${file.nameWithoutExtension}/${file.nameWithoutExtension}.kt"),
+        jars = listOf(nativeJar)
     )
 }
 
