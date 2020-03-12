@@ -7,7 +7,7 @@ Type Provider that lets you import C-Headers inside of Kotlin Scripting
 Use `@Include` with a def file and it will create stubs to call all the methods of that C Library directly from Kotlin
 
 ```kotlin
-@file:Include("math.def")
+@file:Include("math.def") // headers = math.h
 
 println("hello world")
 println("erf(π) = ${erf(M_PI)}")
