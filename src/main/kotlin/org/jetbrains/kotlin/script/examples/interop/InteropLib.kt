@@ -15,8 +15,16 @@ sealed class InteropLib {
 }
 
 @ExperimentalCoroutinesApi
-suspend fun InteropLib.Definition.library(): Library {
-    val packageName = packageName()
+suspend fun InteropLib.Definition.library(): ResultWithDiagnostics<Library> {
+    val info = info()
+
+    info
+        .language
+        ?.takeIf { it != "C" }
+        ?.let { language ->
+            return makeFailureResult("Error loading ${info.packageName.name}: Language $language is not Supported")
+        }
+
     val parentFolder = createTempDir("CInterOp", suffix = "")
         .apply { mkdirs() }
         .apply { deleteOnExit() }
@@ -31,18 +39,24 @@ suspend fun InteropLib.Definition.library(): Library {
     }
 
     return Library(
-        packageName = packageName,
-        stubs = File(parentFolder, "${packageName.folder}/${file.nameWithoutExtension}.kt"),
+        packageName = info.packageName,
+        stubs = File(parentFolder, "${info.packageName.folder}/${file.nameWithoutExtension}.kt"),
         libraryPath = parentFolder,
         jars = listOf(nativeJar)
-    )
+    ).asSuccess()
 }
 
-fun InteropLib.Definition.packageName(): PackageName {
+fun InteropLib.Definition.info(): LibraryInfo {
     val properties = Properties().apply { load(file.inputStream()) }
 
-    val packageName = properties.getProperty("package") ?: return PackageName(listOf(file.nameWithoutExtension))
-    return PackageName(packageName.split("."))
+    val packageName = properties
+        .getProperty("package")
+        ?.let { PackageName(it.split(".")) } ?: PackageName(listOf(file.nameWithoutExtension))
+
+    return LibraryInfo(
+        packageName = packageName,
+        language = properties.getProperty("language")
+    )
 }
 
 fun InteropLib.definition(): ResultWithDiagnostics<InteropLib.Definition> = when (this) {
