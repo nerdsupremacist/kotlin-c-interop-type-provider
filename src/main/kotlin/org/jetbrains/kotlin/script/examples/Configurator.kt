@@ -9,7 +9,6 @@ import org.jetbrains.kotlin.script.examples.interop.library
 import kotlin.script.experimental.api.*
 import kotlin.script.experimental.host.FileBasedScriptSource
 import kotlin.script.experimental.host.toScriptSource
-import kotlin.script.experimental.jvm.jvm
 import kotlin.script.experimental.jvm.updateClasspath
 
 object Configurator : RefineScriptCompilationConfigurationHandler {
@@ -46,10 +45,10 @@ object Configurator : RefineScriptCompilationConfigurationHandler {
         val imports = libraries.map { "${it.packageName.name}.*" }
         val scripts = libraries.map { it.stubs.toScriptSource() }
         val jars = libraries.flatMap { it.jars }.distinct()
-        val libraryPath = libraries.map { it.libraryPath }.distinct().first() // TODO: Evaluate what to do with multiple paths...
+        val libraryPath = libraries.map { it.libraryPath }.distinct().joinToString(":") { it.absolutePath }
 
         val libraryPathSetter = """
-            System.setProperty("java.library.path", "${libraryPath.absolutePath}")
+            System.setProperty("java.library.path", "$libraryPath:" + System.getProperty("java.library.path"))
         """.trimIndent()
 
         val libraryPathScript = createTempFile(prefix = "CodeGen", suffix = ".$extension.kts", directory = baseDirectory)
