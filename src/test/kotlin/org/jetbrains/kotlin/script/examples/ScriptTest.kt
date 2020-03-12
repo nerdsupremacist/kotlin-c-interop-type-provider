@@ -16,12 +16,12 @@ class ScriptTest {
 
     @Test
     fun `Sample Test`() {
-        val out = captureOut {
-            val res = evalFile("hello-world")
-            assertSucceeded(res)
-        }.lines()
+        val (res, out) = captureOut { evalFile("hello-world") }
 
-        Assert.assertEquals("hello world", out[0])
+        assertSucceeded(res)
+        assertNoThrow(res)
+
+        Assert.assertEquals("hello world", out)
     }
 
 }
@@ -31,6 +31,17 @@ private fun assertSucceeded(res: ResultWithDiagnostics<EvaluationResult>) {
         "test failed:\n  ${res.reports.joinToString("\n  ") { it.message + if (it.exception == null) "" else ": ${it.exception}" }}",
         res is ResultWithDiagnostics.Success
     )
+}
+
+private fun assertNoThrow(res: ResultWithDiagnostics<EvaluationResult>) {
+    val returnValue = res
+        .valueOrNull()
+        ?.returnValue ?: return
+
+    when (returnValue) {
+        is ResultValue.Error -> Assert.fail("Script threw unexpected error: ${returnValue.error.message}")
+        else -> Unit
+    }
 }
 
 private fun evalFile(scriptName: String): ResultWithDiagnostics<EvaluationResult> {
@@ -48,15 +59,19 @@ private fun evalFile(scriptName: String): ResultWithDiagnostics<EvaluationResult
     return BasicJvmScriptingHost().eval(scriptFile.toScriptSource(), scriptDefinition, evaluationEnv)
 }
 
-private fun captureOut(body: () -> Unit): String {
+private fun <T> captureOutResult(body: () -> T): Pair<Result<T>, String> {
     val outStream = ByteArrayOutputStream()
     val prevOut = System.out
     System.setOut(PrintStream(outStream))
-    try {
-        body()
-    } finally {
-        System.out.flush()
-        System.setOut(prevOut)
-    }
-    return outStream.toString().trim()
+
+    val result = runCatching { body() }
+
+    System.out.flush()
+    System.setOut(prevOut)
+
+    return result to outStream.toString().trim()
+}
+
+private fun <T> captureOut(body: () -> T): Pair<T, String> {
+    return captureOutResult { body() }.run { first.getOrThrow() to second }
 }
