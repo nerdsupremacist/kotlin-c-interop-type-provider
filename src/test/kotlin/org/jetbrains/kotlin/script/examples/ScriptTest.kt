@@ -38,10 +38,19 @@ private fun assertNoThrow(res: ResultWithDiagnostics<EvaluationResult>) {
         .valueOrNull()
         ?.returnValue ?: return
 
-    when (returnValue) {
-        is ResultValue.Error -> Assert.fail("Script threw unexpected error: ${returnValue.error.message}")
-        else -> Unit
+    val exception = when (returnValue) {
+        is ResultValue.Error -> returnValue.error
+        else -> return
     }
+
+    val failureMessage = """
+        Script threw unexpected error:
+            $exception
+            Message: ${exception.message}
+            Stacktrace:
+    """.trimIndent() + "\n" + exception.stackTrace.joinToString("\n").prependIndent().prependIndent()
+
+    Assert.fail(failureMessage)
 }
 
 private fun evalFile(scriptName: String): ResultWithDiagnostics<EvaluationResult> {
