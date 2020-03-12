@@ -6,12 +6,14 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.kotlin.script.examples.interop.definition
 import org.jetbrains.kotlin.script.examples.interop.library
+import java.io.File
 import kotlin.script.experimental.api.*
 import kotlin.script.experimental.host.FileBasedScriptSource
 import kotlin.script.experimental.host.toScriptSource
 import kotlin.script.experimental.jvm.updateClasspath
 
-object Configurator : RefineScriptCompilationConfigurationHandler {
+class Configurator(private val libraryFolder: File) : RefineScriptCompilationConfigurationHandler {
+    private val libraryPathScript by lazy { libraryPathSetterSourceCode(libraryFolder) }
 
     @ExperimentalCoroutinesApi
     override fun invoke(context: ScriptConfigurationRefinementContext): ResultWithDiagnostics<ScriptCompilationConfiguration> {
@@ -37,7 +39,7 @@ object Configurator : RefineScriptCompilationConfigurationHandler {
         val libraries = runBlocking {
             definitions.map { definition ->
                 async {
-                    definition.library()
+                    definition.library(libraryFolder = libraryFolder)
                 }
             }.awaitAll()
         }.mapSuccess { it }.valueOr { return it }

@@ -6,6 +6,10 @@ import kotlin.script.experimental.jvm.dependenciesFromClassContext
 import kotlin.script.experimental.jvm.jvm
 
 object ScriptDefinition : ScriptCompilationConfiguration({
+    val folder = createTempDir("CInterop", "")
+        .apply { deleteOnExit() }
+        .apply { mkdirs() }
+
     defaultImports(
         File::class,
         Include::class
@@ -17,7 +21,7 @@ object ScriptDefinition : ScriptCompilationConfiguration({
 
     refineConfiguration {
         compilerOptions.append("-Xopt-in=kotlin.ExperimentalUnsignedTypes")
-        onAnnotations(Include::class, handler = Configurator)
+        onAnnotations(Include::class, handler = Configurator(libraryFolder = folder))
     }
 
     ide {

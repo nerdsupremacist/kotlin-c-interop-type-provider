@@ -15,7 +15,7 @@ sealed class InteropLib {
 }
 
 @ExperimentalCoroutinesApi
-suspend fun InteropLib.Definition.library(): ResultWithDiagnostics<Library> {
+suspend fun InteropLib.Definition.library(libraryFolder: File): ResultWithDiagnostics<Library> {
     val info = info()
 
     info
@@ -25,23 +25,18 @@ suspend fun InteropLib.Definition.library(): ResultWithDiagnostics<Library> {
             return makeFailureResult("Error loading ${info.packageName.name}: Language $language is not Supported")
         }
 
-    val parentFolder = createTempDir("CInterOp", suffix = "")
-        .apply { mkdirs() }
-        .apply { deleteOnExit() }
-
     val nativeFolder = File("native")
     val processCLib = File(nativeFolder, "bin/processCLib")
     val nativeJar = File(nativeFolder, "konan/lib/kotlin-native.jar")
 
     val command = "${processCLib.absolutePath} -def ${file.absolutePath} -no-default-libs -Xpurge-user-libs -mode sourcecode -no-endorsed-libs"
-    shell(dir = parentFolder) {
+    shell(dir = libraryFolder) {
        command()
     }
 
     return Library(
         packageName = info.packageName,
-        stubs = File(parentFolder, "${info.packageName.folder}/${file.nameWithoutExtension}.kt"),
-        libraryPath = parentFolder,
+        stubs = File(libraryFolder, "${info.packageName.folder}/${file.nameWithoutExtension}.kt"),
         jars = listOf(nativeJar)
     ).asSuccess()
 }
