@@ -47,17 +47,6 @@ class Configurator(private val libraryFolder: File) : RefineScriptCompilationCon
         val imports = libraries.map { "${it.packageName.name}.*" }
         val scripts = libraries.map { it.stubs.toScriptSource() }
         val jars = libraries.flatMap { it.jars }.distinct()
-        val libraryPath = libraries.map { it.libraryPath }.distinct().joinToString(":") { it.absolutePath }
-
-        val libraryPathSetter = """
-            System.setProperty("java.library.path", "$libraryPath:" + System.getProperty("java.library.path"))
-            ClassLoader::class.java.getDeclaredField("sys_paths").apply { isAccessible = true }.set(null, null)
-        """.trimIndent()
-
-        val libraryPathScript = createTempFile(prefix = "CodeGen", suffix = ".$extension.kts", directory = baseDirectory)
-            .apply { writeText(libraryPathSetter) }
-            .apply { deleteOnExit() }
-            .toScriptSource()
 
         return context
             .compilationConfiguration
