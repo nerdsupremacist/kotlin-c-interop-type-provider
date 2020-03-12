@@ -17,11 +17,13 @@ class ScriptTest {
     @Test
     fun `Sample Test`() {
         val (res, out) = captureOut { evalFile("hello-world") }
+        val lines = out.lines()
 
         assertSucceeded(res)
         assertNoThrow(res)
 
-        Assert.assertEquals("hello world", out)
+        Assert.assertEquals("hello world", lines[0])
+        Assert.assertEquals("erf(π) = 0.9999911238536323", lines[1])
     }
 
 }

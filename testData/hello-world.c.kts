@@ -1,5 +1,5 @@
 
-@file:Include("libcurl.def")
+@file:Include("math.def")
 
-private val curl = curl_easy_init()
-print("hello world")
+println("hello world")
+println("erf(π) = ${erf(M_PI)}")
