@@ -40,7 +40,7 @@ object Configurator : RefineScriptCompilationConfigurationHandler {
                     definition.library()
                 }
             }.awaitAll()
-        }
+        }.mapSuccess { it }.valueOr { return it }
 
         val imports = libraries.map { "${it.packageName.name}.*" }
         val scripts = libraries.map { it.stubs.toScriptSource() }
@@ -49,6 +49,7 @@ object Configurator : RefineScriptCompilationConfigurationHandler {
 
         val libraryPathSetter = """
             System.setProperty("java.library.path", "$libraryPath:" + System.getProperty("java.library.path"))
+            ClassLoader::class.java.getDeclaredField("sys_paths").apply { isAccessible = true }.set(null, null)
         """.trimIndent()
 
         val libraryPathScript = createTempFile(prefix = "CodeGen", suffix = ".$extension.kts", directory = baseDirectory)
