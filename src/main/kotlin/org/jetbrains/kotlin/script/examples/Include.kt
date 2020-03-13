@@ -6,6 +6,8 @@ import kotlin.script.experimental.api.ResultWithDiagnostics
 import kotlin.script.experimental.api.asSuccess
 import kotlin.script.experimental.api.makeFailureResult
 
+//region Include Annotation used in Script
+
 @Target(AnnotationTarget.FILE)
 @Repeatable
 @Retention(AnnotationRetention.SOURCE)
@@ -15,6 +17,11 @@ annotation class Include(
     val compilerOptions: String = "",
     val linkerOptions: String = ""
 )
+
+//endregion
+
+
+//region Resolve the type of included interop
 
 internal fun Include.resolve(baseDirectory: File?): ResultWithDiagnostics<IncludedInterop> {
     val file = baseDirectory?.resolve(path)?.takeIf { it.exists() } ?: File(path)
@@ -36,3 +43,5 @@ internal fun Include.resolve(baseDirectory: File?): ResultWithDiagnostics<Includ
         else -> return makeFailureResult("File $file cannot be included")
     }
 }
+
+//endregion
