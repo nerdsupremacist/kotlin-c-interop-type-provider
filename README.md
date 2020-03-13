@@ -65,3 +65,22 @@ val curl = curl_easy_init()
 ## Usage
 
 coming soon
+
+## How does it work?
+
+This Script Definition relies on a custom version of the Kotlin Native [C Interop Tool](https://kotlinlang.org/docs/reference/native/c_interop.html). 
+You can find it under `native/` 
+
+The logic behind this is to:
+1. Find or create a .def file for the included header
+    1. In case of a local header file with an implementation, we look for the implementation and compile it using clang
+    1. options for how to compile the implementation are available in `compilerOpts` and `linkerOpts`
+1. Run the C Interop Tool with a jvm flavor
+1. Update the classpath of the script to include Kotlin Native
+1. Update the library search path for the JVM, so that it can find the generated stubs library
+1. Import the generated kotlin stubs for the library
+
+## Disclaimer
+
+Due to the fact that the scripts are running on the JVM, this only supports interoperability with C. 
+Objective-C is not supported yet inside the JVM yet
