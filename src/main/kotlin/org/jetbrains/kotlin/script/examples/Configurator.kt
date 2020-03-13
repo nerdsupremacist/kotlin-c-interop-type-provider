@@ -2,8 +2,8 @@ package org.jetbrains.kotlin.script.examples
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.kotlin.script.examples.interop.toDefinition
 import org.jetbrains.kotlin.script.examples.interop.library
+import org.jetbrains.kotlin.script.examples.interop.toDefinition
 import java.io.File
 import kotlin.script.experimental.api.*
 import kotlin.script.experimental.host.FileBasedScriptSource

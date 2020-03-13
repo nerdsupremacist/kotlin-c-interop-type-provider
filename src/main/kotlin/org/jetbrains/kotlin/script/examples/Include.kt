@@ -1,7 +1,6 @@
 package org.jetbrains.kotlin.script.examples
 
 import org.jetbrains.kotlin.script.examples.interop.IncludedInterop
-import org.jetbrains.kotlin.script.util.Import
 import java.io.File
 import kotlin.script.experimental.api.ResultWithDiagnostics
 import kotlin.script.experimental.api.asSuccess
