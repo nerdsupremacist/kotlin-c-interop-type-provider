@@ -2,7 +2,7 @@ package org.jetbrains.kotlin.script.examples.interop
 
 import java.io.File
 
-data class PackageName(private val parts: List<String>) {
+internal data class PackageName(private val parts: List<String>) {
     val name: String
         get() = parts.joinToString(".")
 

@@ -17,7 +17,7 @@ annotation class Include(
     val linkerOpts: String = ""
 )
 
-fun Include.resolve(baseDirectory: File?): ResultWithDiagnostics<IncludedInterop> {
+internal fun Include.resolve(baseDirectory: File?): ResultWithDiagnostics<IncludedInterop> {
     val file = baseDirectory?.resolve(path)?.takeIf { it.exists() }
         ?: File(path)
 

@@ -6,7 +6,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlin.script.experimental.api.ResultWithDiagnostics
 import kotlin.script.experimental.api.mapSuccess
 
-suspend fun <T, O> Iterable<T>.parallelMapSuccess(block: suspend (T) -> ResultWithDiagnostics<O>) = coroutineScope {
+internal suspend fun <T, O> Iterable<T>.parallelMapSuccess(block: suspend (T) -> ResultWithDiagnostics<O>) = coroutineScope {
     map { element ->
         async {
             block(element)

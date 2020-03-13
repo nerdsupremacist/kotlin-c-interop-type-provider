@@ -8,7 +8,7 @@ import kotlin.script.experimental.api.ResultWithDiagnostics
 import kotlin.script.experimental.api.asSuccess
 import kotlin.script.experimental.api.makeFailureResult
 
-sealed class IncludedInterop {
+internal sealed class IncludedInterop {
     class Definition(val file: File) : IncludedInterop()
     class HeaderFile(
         val path: String,
@@ -20,7 +20,7 @@ sealed class IncludedInterop {
 }
 
 @ExperimentalCoroutinesApi
-suspend fun IncludedInterop.Definition.library(libraryFolder: File): ResultWithDiagnostics<Library> {
+internal suspend fun IncludedInterop.Definition.library(libraryFolder: File): ResultWithDiagnostics<Library> {
     val info = info()
 
     info
@@ -46,7 +46,7 @@ suspend fun IncludedInterop.Definition.library(libraryFolder: File): ResultWithD
     ).asSuccess()
 }
 
-fun IncludedInterop.Definition.info(): LibraryInfo {
+internal fun IncludedInterop.Definition.info(): LibraryInfo {
     val properties = Properties().apply { load(file.inputStream()) }
 
     val packageName = properties
@@ -60,7 +60,7 @@ fun IncludedInterop.Definition.info(): LibraryInfo {
 }
 
 @ExperimentalCoroutinesApi
-suspend fun IncludedInterop.toDefinition(libraryFolder: File): ResultWithDiagnostics<IncludedInterop.Definition> {
+internal suspend fun IncludedInterop.toDefinition(libraryFolder: File): ResultWithDiagnostics<IncludedInterop.Definition> {
     return when (this) {
         is IncludedInterop.Definition -> this.asSuccess()
         is IncludedInterop.HeaderFile -> {
