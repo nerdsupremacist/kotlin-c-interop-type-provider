@@ -1,5 +1,5 @@
 
-@file:Include("math.def")
+@file:Include("test.h")
 
 println("hello world")
-println("erf(π) = ${erf(M_PI)}")
+println("foo() = ${foo()}")

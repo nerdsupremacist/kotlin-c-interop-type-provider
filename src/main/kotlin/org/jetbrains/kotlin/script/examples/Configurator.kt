@@ -4,7 +4,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
-import org.jetbrains.kotlin.script.examples.interop.definition
+import org.jetbrains.kotlin.script.examples.interop.toDefinition
 import org.jetbrains.kotlin.script.examples.interop.library
 import java.io.File
 import kotlin.script.experimental.api.*
@@ -16,7 +16,10 @@ class Configurator(private val libraryFolder: File) : RefineScriptCompilationCon
     private val libraryPathScript by lazy { libraryPathSetterSourceCode(libraryFolder) }
 
     @ExperimentalCoroutinesApi
-    override fun invoke(context: ScriptConfigurationRefinementContext): ResultWithDiagnostics<ScriptCompilationConfiguration> {
+    override fun invoke(context: ScriptConfigurationRefinementContext) = runBlocking { processAnnotations(context) }
+
+    @ExperimentalCoroutinesApi
+    suspend fun processAnnotations(context: ScriptConfigurationRefinementContext): ResultWithDiagnostics<ScriptCompilationConfiguration> {
         val baseDirectory = (context.script as? FileBasedScriptSource)?.file?.parentFile
 
         val annotations = context
@@ -30,19 +33,13 @@ class Configurator(private val libraryFolder: File) : RefineScriptCompilationCon
             }
             ?.takeIf { it.isNotEmpty() } ?: return context.compilationConfiguration.asSuccess()
 
-        val definitions = annotations
-            .mapSuccess { it.lib(baseDirectory) }
+        val libraries = annotations
+            .mapSuccess { it.resolve(baseDirectory) }
             .valueOr { return it }
-            .mapSuccess { it.definition() }
+            .parallelMapSuccess { it.toDefinition(libraryFolder = libraryFolder) }
             .valueOr { return it }
-
-        val libraries = runBlocking {
-            definitions.map { definition ->
-                async {
-                    definition.library(libraryFolder = libraryFolder)
-                }
-            }.awaitAll()
-        }.mapSuccess { it }.valueOr { return it }
+            .parallelMapSuccess { it.library(libraryFolder = libraryFolder) }
+            .valueOr { return it  }
 
         val imports = libraries.map { "${it.packageName.name}.*" }
         val scripts = libraries.map { it.stubs.toScriptSource() }
@@ -58,5 +55,6 @@ class Configurator(private val libraryFolder: File) : RefineScriptCompilationCon
             }
             .asSuccess()
     }
+
 
 }

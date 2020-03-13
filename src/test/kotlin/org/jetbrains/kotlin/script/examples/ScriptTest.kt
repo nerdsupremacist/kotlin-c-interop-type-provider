@@ -23,7 +23,7 @@ class ScriptTest {
         assertNoThrow(res)
 
         Assert.assertEquals("hello world", lines[0])
-        Assert.assertEquals("erf(π) = 0.9999911238536323", lines[1])
+        Assert.assertEquals("foo() = 42", lines[1])
     }
 
 }
