@@ -11,7 +11,7 @@ Use `@Include` with a .def or .h file and it will create stubs to call all the m
 ```kotlin
 @file:Include("math.h")
 
-println("erf(π) = ${erf(M_PI)}")
+println("erf(π) = ${erf(M_PI)}") // erf(π) = 0.99999112385
 ```
 
 ### Using your own Code
@@ -38,7 +38,7 @@ Just include the header file:
 ```kotlin
 @file:Include("foo.h")
 
-println("foo() = ${foo()}") // 42
+println("foo() = ${foo()}") // foo() = 42
 ```
 
 ### Using a Def File
