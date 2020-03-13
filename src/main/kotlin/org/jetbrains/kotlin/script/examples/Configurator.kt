@@ -1,8 +1,6 @@
 package org.jetbrains.kotlin.script.examples
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.kotlin.script.examples.interop.toDefinition
 import org.jetbrains.kotlin.script.examples.interop.library

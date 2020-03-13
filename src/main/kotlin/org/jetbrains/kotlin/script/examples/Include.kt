@@ -13,25 +13,24 @@ import kotlin.script.experimental.api.makeFailureResult
 annotation class Include(
     val path: String,
     val name: String = "",
-    val compilerOpts: String = "",
-    val linkerOpts: String = ""
+    val compilerOptions: String = "",
+    val linkerOptions: String = ""
 )
 
 internal fun Include.resolve(baseDirectory: File?): ResultWithDiagnostics<IncludedInterop> {
-    val file = baseDirectory?.resolve(path)?.takeIf { it.exists() }
-        ?: File(path)
+    val file = baseDirectory?.resolve(path)?.takeIf { it.exists() } ?: File(path)
 
     return when (file.extension) {
-        "def" -> if (compilerOpts.isBlank() && linkerOpts.isBlank())
+        "def" -> if (compilerOptions.isBlank() && linkerOptions.isBlank())
             IncludedInterop.Definition(file).asSuccess()
         else
-            makeFailureResult("Importing a def file with additional compiler or linker args is not supported")
+            makeFailureResult("Importing a def file with additional compiler or linker options is not supported")
 
         "h" -> IncludedInterop.HeaderFile(
             path = path,
             name = name.takeIf { it.isNotBlank() } ?: file.nameWithoutExtension,
-            compilerOpts = compilerOpts.split(" ").filter { it.isNotBlank() },
-            linkerOpts = linkerOpts.split(" ").filter { it.isNotBlank() },
+            compilerOptions = compilerOptions.split(" ").filter { it.isNotBlank() },
+            linkerOptions = linkerOptions.split(" ").filter { it.isNotBlank() },
             baseDirectory = baseDirectory
         ).asSuccess()
 
