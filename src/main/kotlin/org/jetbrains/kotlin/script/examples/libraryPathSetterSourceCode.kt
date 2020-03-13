@@ -4,7 +4,7 @@ import java.io.File
 import kotlin.script.experimental.api.SourceCode
 import kotlin.script.experimental.host.toScriptSource
 
-// This is required to set the path of the .dylib files
+// This is required to set the path of the .dylib, .dll, etc. files
 fun libraryPathSetterSourceCode(libraryFolder: File): SourceCode {
     val setter = """
         System.setProperty("java.library.path", "${libraryFolder.absolutePath}:" + System.getProperty("java.library.path"))
