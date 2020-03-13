@@ -75,7 +75,10 @@ The logic behind this is to:
 1. Find or create a .def file for the included header
     1. In case of a local header file with an implementation, we look for the implementation and compile it using clang
     1. options for how to compile the implementation are available in `compilerOpts` and `linkerOpts`
-1. Run the C Interop Tool with a jvm flavor
+1. Run the C Interop Tool with the `jvm` flavor. 
+    1. The Kotlin Native Command Line tools do not allow to use the JVM as a flavor.
+    1. However it is possible if you call the following function: `https://github.com/JetBrains/kotlin-native/blob/da0e56edea47622c751b06378e31b6587dc74887/Interop/StubGenerator/src/main/kotlin/org/jetbrains/kotlin/native/interop/gen/jvm/main.kt#L40`
+    1. This is why we need the custom version of Kotlin Native
 1. Update the classpath of the script to include Kotlin Native
 1. Update the library search path for the JVM, so that it can find the generated stubs library
 1. Import the generated kotlin stubs for the library
