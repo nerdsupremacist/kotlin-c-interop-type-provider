@@ -120,6 +120,7 @@ internal suspend fun IncludedInterop.Definition.library(libraryFolder: File): Re
         jars = listOf(nativeJar)
     )
 
+    // TODO: Check if the contents of the def file have changed
     if (stubs.exists()) {
         return library.asSuccess()
     }
