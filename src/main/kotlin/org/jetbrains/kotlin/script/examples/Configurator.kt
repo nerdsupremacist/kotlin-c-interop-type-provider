@@ -3,6 +3,7 @@ package org.jetbrains.kotlin.script.examples
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.kotlin.script.examples.cache.Cache
+import org.jetbrains.kotlin.script.examples.interop.compileToJar
 import org.jetbrains.kotlin.script.examples.interop.library
 import org.jetbrains.kotlin.script.examples.interop.toDefinition
 import kotlin.script.experimental.api.*
@@ -39,17 +40,26 @@ class Configurator(private val cache: Cache) : RefineScriptCompilationConfigurat
             .parallelMapSuccess { it.library(cache = cache) }
             .valueOr { return it  }
 
-        val imports = libraries.map { "${it.packageName.name}.*" }
-        val scripts = libraries.map { it.stubs.toScriptSource() }
+
         val jars = libraries.flatMap { it.jars }.distinct()
+        val stubsCompilationConfiguration = context
+            .compilationConfiguration
+            .with {
+                updateClasspath(jars)
+            }
+
+        val stubs = libraries
+            .parallelMapSuccess { it.stubs.compileToJar(cache, stubsCompilationConfiguration) }
+            .valueOr { return it }
+
+        val imports = libraries.map { "${it.packageName.name}.*" }
 
         return context
             .compilationConfiguration
             .with {
                 defaultImports.append(imports)
                 importScripts.append(libraryPathScript)
-                importScripts.append(scripts)
-                updateClasspath(jars)
+                updateClasspath(stubs)
             }
             .asSuccess()
     }
