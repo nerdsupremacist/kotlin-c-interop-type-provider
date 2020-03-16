@@ -113,16 +113,23 @@ internal suspend fun IncludedInterop.Definition.library(libraryFolder: File): Re
     val processCLib = File(nativeFolder, "bin/processCLib")
     val nativeJar = File(nativeFolder, "konan/lib/kotlin-native.jar")
 
+    val stubs = File(libraryFolder, "${info.packageName.folder}/${file.nameWithoutExtension}.kt")
+    val library = Library(
+        packageName = info.packageName,
+        stubs = stubs,
+        jars = listOf(nativeJar)
+    )
+
+    if (stubs.exists()) {
+        return library.asSuccess()
+    }
+
     val command = "${processCLib.absolutePath} -def ${file.absolutePath} -no-default-libs -Xpurge-user-libs -mode sourcecode -no-endorsed-libs"
     shell(dir = libraryFolder) {
         command()
     }
 
-    return Library(
-        packageName = info.packageName,
-        stubs = File(libraryFolder, "${info.packageName.folder}/${file.nameWithoutExtension}.kt"),
-        jars = listOf(nativeJar)
-    ).asSuccess()
+    return library.asSuccess()
 }
 
 //endregion

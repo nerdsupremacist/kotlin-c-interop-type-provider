@@ -27,6 +27,7 @@ suspend fun File.compileWithClang(
 
     // Determine where the binary should be
     val binary = File(libraryFolder, "$binaryName.o")
+    if (binary.exists()) return binary.asSuccess()
 
     // Compile that with compiler and linker args
     shell(dir = implementation.parentFile) {

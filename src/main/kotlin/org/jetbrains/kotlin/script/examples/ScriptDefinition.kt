@@ -6,7 +6,9 @@ import kotlin.script.experimental.jvm.dependenciesFromClassContext
 import kotlin.script.experimental.jvm.jvm
 
 object ScriptDefinition : ScriptCompilationConfiguration({
-    val folder = createTempDir("CInterop", "")
+    val cache = Cache.current()
+
+    val folder = cache?.typeProviderCacheDir ?: createTempDir("CInterop", "")
         .apply { deleteOnExit() }
         .apply { mkdirs() }
 
@@ -27,4 +29,6 @@ object ScriptDefinition : ScriptCompilationConfiguration({
     ide {
         acceptedLocations(ScriptAcceptedLocation.Everywhere)
     }
+
+    cache?.let(::useCache)
 })
