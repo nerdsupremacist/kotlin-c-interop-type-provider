@@ -1,4 +1,4 @@
-rootProject.name = "kotlin-json-type-provider"
+rootProject.name = "kotlin-c-interop-type-provider"
 
 pluginManagement {
     repositories {
