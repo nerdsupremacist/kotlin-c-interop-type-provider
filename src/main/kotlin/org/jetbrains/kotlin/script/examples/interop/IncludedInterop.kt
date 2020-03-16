@@ -46,7 +46,7 @@ private suspend fun IncludedInterop.HeaderFile.definitionFile(
     val binary = localFile
         ?.run {
             compileWithClang(
-                binaryName = name,
+                binaryName = nameWithoutExtension,
                 cache = cache,
                 compilerOptions = compilerOptions,
                 linkerOptions = linkerOptions
@@ -57,7 +57,8 @@ private suspend fun IncludedInterop.HeaderFile.definitionFile(
 
     return cache
         .run {
-            binary.generatesIfExists("$name.def", *compilerOptions.toTypedArray(), *linkerOptions.toTypedArray())
+            binary?.generates("$name.def", *compilerOptions.toTypedArray(), *linkerOptions.toTypedArray())
+                ?: "${name}Definition".generates("$name.def", *compilerOptions.toTypedArray(), *linkerOptions.toTypedArray())
         }
         .ifMissed { defFile ->
             defFile.createNewFile()
