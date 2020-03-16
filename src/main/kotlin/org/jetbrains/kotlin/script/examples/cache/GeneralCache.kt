@@ -1,17 +1,20 @@
-package org.jetbrains.kotlin.script.examples
+package org.jetbrains.kotlin.script.examples.cache
 
+import org.jetbrains.kotlin.script.examples.extension
+import org.jetbrains.kotlin.script.examples.name
 import java.io.File
 
 const val COMPILED_SCRIPTS_CACHE_DIR_ENV_VAR = "KOTLIN_${name}_KTS_COMPILED_SCRIPTS_CACHE_DIR"
-const val COMPILED_SCRIPTS_CACHE_DIR_PROPERTY = "kotlin.${extension}.kts.compiled.scripts.cache.dir"
+const val COMPILED_SCRIPTS_CACHE_DIR_PROPERTY = "kotlin.$extension.kts.compiled.scripts.cache.dir"
 
-data class Cache(
+data class GeneralCache(
     val compilerCacheDir: File,
     val typeProviderCacheDir: File
+) : Cache by HashFileCache(
+    typeProviderCacheDir
 ) {
-
     companion object {
-        fun current(): Cache? {
+        fun current(): GeneralCache? {
             val cacheExtSetting = System.getProperty(COMPILED_SCRIPTS_CACHE_DIR_PROPERTY)
                 ?: System.getenv(COMPILED_SCRIPTS_CACHE_DIR_ENV_VAR)
 
@@ -23,9 +26,12 @@ data class Cache(
                 else -> File(cacheExtSetting)
             }?.takeIf { it.exists() && it.isDirectory } ?: return null
 
-            return Cache(
+            return GeneralCache(
                 compilerCacheDir = cacheBaseDir,
-                typeProviderCacheDir = File(cacheBaseDir, "${name}TypeProviderCodeGen").apply { mkdirs() }
+                typeProviderCacheDir = File(
+                    cacheBaseDir,
+                    "${name}TypeProviderCodeGen"
+                ).apply { mkdirs() }
             )
         }
     }

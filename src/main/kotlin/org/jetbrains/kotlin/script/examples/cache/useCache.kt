@@ -1,4 +1,4 @@
-package org.jetbrains.kotlin.script.examples
+package org.jetbrains.kotlin.script.examples.cache
 
 import org.jetbrains.kotlin.daemon.common.toHexString
 import java.io.File
@@ -11,12 +11,15 @@ import kotlin.script.experimental.jvm.compilationCache
 import kotlin.script.experimental.jvm.jvm
 import kotlin.script.experimental.jvmhost.CompiledScriptJarsCache
 
-fun ScriptCompilationConfiguration.Builder.useCache(cache: Cache) {
+fun ScriptCompilationConfiguration.Builder.useCache(cache: GeneralCache) {
     hostConfiguration(ScriptingHostConfiguration {
         jvm {
             compilationCache(
                 CompiledScriptJarsCache { script, scriptCompilationConfiguration ->
-                    File(cache.compilerCacheDir, compiledScriptUniqueName(script, scriptCompilationConfiguration) + ".jar")
+                    File(cache.compilerCacheDir, compiledScriptUniqueName(
+                        script,
+                        scriptCompilationConfiguration
+                    ) + ".jar")
                 }
             )
         }

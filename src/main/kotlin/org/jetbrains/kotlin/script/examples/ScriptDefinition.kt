@@ -1,16 +1,14 @@
 package org.jetbrains.kotlin.script.examples
 
+import org.jetbrains.kotlin.script.examples.cache.GeneralCache
+import org.jetbrains.kotlin.script.examples.cache.HashFileCache
 import java.io.File
 import kotlin.script.experimental.api.*
 import kotlin.script.experimental.jvm.dependenciesFromClassContext
 import kotlin.script.experimental.jvm.jvm
 
 object ScriptDefinition : ScriptCompilationConfiguration({
-    val cache = Cache.current()
-
-    val folder = cache?.typeProviderCacheDir ?: createTempDir("CInterop", "")
-        .apply { deleteOnExit() }
-        .apply { mkdirs() }
+    val cache = GeneralCache.current()
 
     defaultImports(
         File::class,
@@ -23,12 +21,13 @@ object ScriptDefinition : ScriptCompilationConfiguration({
 
     refineConfiguration {
         compilerOptions.append("-Xopt-in=kotlin.ExperimentalUnsignedTypes")
-        onAnnotations(Include::class, handler = Configurator(libraryFolder = folder))
+        onAnnotations(Include::class, handler = Configurator(cache = cache ?: HashFileCache(createTempDir())))
     }
 
     ide {
         acceptedLocations(ScriptAcceptedLocation.Everywhere)
     }
 
-    cache?.let(::useCache)
+    // TODO: Figure out how to still run the refinement while caching the individual scripts
+//    cache?.let(::useCache)
 })

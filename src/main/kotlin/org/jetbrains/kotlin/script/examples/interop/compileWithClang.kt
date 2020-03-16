@@ -2,6 +2,7 @@ package org.jetbrains.kotlin.script.examples.interop
 
 import eu.jrie.jetbrains.kotlinshell.shell.shell
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.jetbrains.kotlin.script.examples.cache.Cache
 import java.io.File
 import kotlin.script.experimental.api.ResultWithDiagnostics
 import kotlin.script.experimental.api.asSuccess
@@ -10,7 +11,7 @@ import kotlin.script.experimental.api.makeFailureResult
 @ExperimentalCoroutinesApi
 suspend fun File.compileWithClang(
     binaryName: String,
-    libraryFolder: File? = null,
+    cache: Cache,
     compilerOptions: List<String> = emptyList(),
     linkerOptions: List<String> = emptyList()
 ): ResultWithDiagnostics<File> {
@@ -26,17 +27,17 @@ suspend fun File.compileWithClang(
     }
 
     // Determine where the binary should be
-    val binary = File(libraryFolder, "$binaryName.o")
-
-    // TODO: Check if the contents of the implementation have changed
-    if (binary.exists()) return binary.asSuccess()
-
-    // Compile that with compiler and linker args
-    shell(dir = implementation.parentFile) {
-        val options = (compilerOptions + linkerOptions).joinToString(" ")
-        "clang -c -o ${binary.absolutePath} ${implementation.absolutePath} $options"()
-    }
-
-    // Return the binary file
-    return binary.asSuccess()
+    return cache
+        .run {
+            implementation.generates("$binaryName.o", *compilerOptions.toTypedArray(), *linkerOptions.toTypedArray())
+        }
+        .ifMissed { binary ->
+            // Compile that with compiler and linker args
+            shell(dir = implementation.parentFile) {
+                val options = (compilerOptions + linkerOptions).joinToString(" ")
+                "clang -c -o ${binary.absolutePath} ${implementation.absolutePath} $options"()
+            }
+        }
+        .value
+        .asSuccess()
 }

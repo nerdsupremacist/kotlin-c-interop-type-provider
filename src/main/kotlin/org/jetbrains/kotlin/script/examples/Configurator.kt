@@ -2,16 +2,16 @@ package org.jetbrains.kotlin.script.examples
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.kotlin.script.examples.cache.Cache
 import org.jetbrains.kotlin.script.examples.interop.library
 import org.jetbrains.kotlin.script.examples.interop.toDefinition
-import java.io.File
 import kotlin.script.experimental.api.*
 import kotlin.script.experimental.host.FileBasedScriptSource
 import kotlin.script.experimental.host.toScriptSource
 import kotlin.script.experimental.jvm.updateClasspath
 
-class Configurator(private val libraryFolder: File) : RefineScriptCompilationConfigurationHandler {
-    private val libraryPathScript by lazy { libraryPathSetterSourceCode(libraryFolder) }
+class Configurator(private val cache: Cache) : RefineScriptCompilationConfigurationHandler {
+    private val libraryPathScript by lazy { libraryPathSetterSourceCode(cache = cache) }
 
     @ExperimentalCoroutinesApi
     override fun invoke(context: ScriptConfigurationRefinementContext) = runBlocking { processAnnotations(context) }
@@ -34,9 +34,9 @@ class Configurator(private val libraryFolder: File) : RefineScriptCompilationCon
         val libraries = annotations
             .mapSuccess { it.resolve(baseDirectory) }
             .valueOr { return it }
-            .parallelMapSuccess { it.toDefinition(libraryFolder = libraryFolder) }
+            .parallelMapSuccess { it.toDefinition(cache = cache) }
             .valueOr { return it }
-            .parallelMapSuccess { it.library(libraryFolder = libraryFolder) }
+            .parallelMapSuccess { it.library(cache = cache) }
             .valueOr { return it  }
 
         val imports = libraries.map { "${it.packageName.name}.*" }
@@ -53,6 +53,5 @@ class Configurator(private val libraryFolder: File) : RefineScriptCompilationCon
             }
             .asSuccess()
     }
-
 
 }
