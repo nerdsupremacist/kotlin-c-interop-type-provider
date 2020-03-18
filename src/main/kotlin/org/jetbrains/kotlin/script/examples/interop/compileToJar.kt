@@ -18,7 +18,12 @@ suspend fun File.compileToJar(
         generates("$nameWithoutExtension.jar")
     }
     .ifMissed { jarFile ->
-        val compiled = compiler(toScriptSource(), compilationConfiguration)
+        val refinedCompilationConfiguration = compilationConfiguration.with {
+            importScripts(toScriptSource())
+        }
+
+        val dummyScript = "${nameWithoutExtension}_dummyScript.c.kts".file().apply { createNewFile() }
+        val compiled = compiler(dummyScript.toScriptSource(), refinedCompilationConfiguration)
             .valueOr { return it } as KJvmCompiledScript<*>
 
         compiled.saveToJar(jarFile)
