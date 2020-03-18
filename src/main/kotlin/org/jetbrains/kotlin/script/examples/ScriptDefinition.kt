@@ -1,7 +1,7 @@
 package org.jetbrains.kotlin.script.examples
 
 import org.jetbrains.kotlin.script.examples.cache.GeneralCache
-import org.jetbrains.kotlin.script.examples.cache.HashFileCache
+import org.jetbrains.kotlin.script.examples.cache.NoopCache
 import java.io.File
 import kotlin.script.experimental.api.*
 import kotlin.script.experimental.jvm.dependenciesFromClassContext
@@ -21,7 +21,7 @@ object ScriptDefinition : ScriptCompilationConfiguration({
 
     refineConfiguration {
         compilerOptions.append("-Xopt-in=kotlin.ExperimentalUnsignedTypes")
-        onAnnotations(Include::class, handler = Configurator(cache = cache ?: HashFileCache(createTempDir())))
+        onAnnotations(Include::class, handler = Configurator(cache = cache ?: NoopCache()))
     }
 
     ide {
