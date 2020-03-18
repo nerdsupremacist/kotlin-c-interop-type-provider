@@ -17,6 +17,7 @@ repositories {
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-scripting-jvm-host:$kotlinVersion")
     implementation("org.jetbrains.kotlin:kotlin-scripting-dependencies:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-scripting-compiler:$kotlinVersion")
     implementation("org.jetbrains.kotlin:kotlin-script-util:$kotlinVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.3")
     implementation("eu.jrie.jetbrains:kotlin-shell-core:0.2")
