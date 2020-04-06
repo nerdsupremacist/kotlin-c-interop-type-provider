@@ -8,7 +8,6 @@ import org.jetbrains.kotlin.script.examples.interop.library
 import org.jetbrains.kotlin.script.examples.interop.toDefinition
 import kotlin.script.experimental.api.*
 import kotlin.script.experimental.host.FileBasedScriptSource
-import kotlin.script.experimental.host.toScriptSource
 import kotlin.script.experimental.jvm.updateClasspath
 
 class Configurator(private val cache: Cache) : RefineScriptCompilationConfigurationHandler {
@@ -39,7 +38,6 @@ class Configurator(private val cache: Cache) : RefineScriptCompilationConfigurat
             .valueOr { return it }
             .parallelMapSuccess { it.library(cache = cache) }
             .valueOr { return it  }
-
 
         val jars = libraries.flatMap { it.jars }.distinct()
         val stubsCompilationConfiguration = context
